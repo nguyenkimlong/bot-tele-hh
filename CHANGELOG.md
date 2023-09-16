@@ -1,3 +1,16 @@
+# v0.0.2 (Sat Sep 16 2023)
+
+#### ⚠️ Pushed to `main`
+
+- Update requirements.txt ([@nguyenkimlong](https://github.com/nguyenkimlong))
+- Update app.py ([@nguyenkimlong](https://github.com/nguyenkimlong))
+
+#### Authors: 1
+
+- nguyenkimlong ([@nguyenkimlong](https://github.com/nguyenkimlong))
+
+---
+
 # v0.0.1 (Tue Sep 05 2023)
 
 :tada: This release contains work from a new contributor! :tada:
