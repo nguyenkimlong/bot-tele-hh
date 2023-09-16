@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 # context.
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /start is issued."""
-    await update.message.reply_text("Hi Long Nguyen!")
+    await update.message.reply_text("Hi Long Nguyen 123!")
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
