@@ -5,3 +5,5 @@ gunicorn
 PyMySQL
 coloredlogs
 python-dotenv
+
+python-telegram-bot
