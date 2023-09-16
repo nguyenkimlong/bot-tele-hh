@@ -1,3 +1,15 @@
+# v0.0.4 (Sat Sep 16 2023)
+
+#### ⚠️ Pushed to `main`
+
+- Update app.py ([@nguyenkimlong](https://github.com/nguyenkimlong))
+
+#### Authors: 1
+
+- nguyenkimlong ([@nguyenkimlong](https://github.com/nguyenkimlong))
+
+---
+
 # v0.0.3 (Sat Sep 16 2023)
 
 #### ⚠️ Pushed to `main`
