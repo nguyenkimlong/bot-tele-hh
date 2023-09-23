@@ -1,3 +1,15 @@
+# v0.0.5 (Sat Sep 23 2023)
+
+#### ⚠️ Pushed to `main`
+
+- cmit update (long.nk@ohmyhotel.com)
+
+#### Authors: 1
+
+- longnk (long.nk@ohmyhotel.com)
+
+---
+
 # v0.0.4 (Sat Sep 16 2023)
 
 #### ⚠️ Pushed to `main`
