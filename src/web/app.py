@@ -19,7 +19,7 @@ from telegram.constants import ParseMode,ChatAction
 from telegram.ext import Application, CommandHandler, ContextTypes, InlineQueryHandler,CallbackContext
 import sqlite3 as lite
 
-import pandas as pd
+# import pandas as pd
 # from openpyxl import load_workbook
 
 
