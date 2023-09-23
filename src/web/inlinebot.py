@@ -1,14 +1,19 @@
-from flask import Flask, render_template
-from db import get_db, close_db
-import sqlalchemy
-from logger import log
+#!/usr/bin/env python
+# pylint: disable=unused-argument
+# This program is dedicated to the public domain under the CC0 license.
 
-app = Flask(__name__)
-app.teardown_appcontext(close_db)
+"""
+Don't forget to enable inline mode with @BotFather
 
+First, a few handler functions are defined. Then, those functions are passed to
+the Application and registered at their respective places.
+Then, the bot is started and runs until we press Ctrl-C on the command line.
 
-
-
+Usage:
+Basic inline bot example. Applies different text transformations.
+Press Ctrl-C on the command line or send a signal to the process to stop the
+bot.
+"""
 import logging
 from html import escape
 from uuid import uuid4
@@ -41,7 +46,12 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 database_path = os.path.dirname(__file__) + "\\MyData.db"
-
+# cur = con.cursor()    
+# cur.execute('SELECT SQLITE_VERSION()')
+     
+# data = cur.fetchone()
+     
+# print ("SQLite version: %s" % data) 
 
 class Employee:
     id = 0
@@ -401,36 +411,5 @@ def main() -> None:
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
-# init 
-main()
-
-
-
-
-
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-
-@app.route("/health")
-def health():
-    log.info("Checking /health")
-    db = get_db()
-    health = "OK"
-    try:
-        cur = con.cursor()    
-        cur.execute('SELECT SQLITE_VERSION()')
-     
-        data = cur.fetchone()
-     
-        health = "OK " + "SQLite version: %s" % data
-        log.info(f"/health reported OK including database connection: {data}")
-    except sqlalchemy.exc.OperationalError as e:
-        msg = f"sqlalchemy.exc.OperationalError: {e}"
-        log.error(msg)
-    except Exception as e:
-        msg = f"Error performing healthcheck: {e}"
-        log.error(msg)
-
-    return health
+if __name__ == "__main__":
+    main()
