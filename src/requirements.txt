@@ -7,4 +7,3 @@ coloredlogs
 python-dotenv
 
 python-telegram-bot
-sqlite3
