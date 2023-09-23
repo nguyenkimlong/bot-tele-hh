@@ -20,15 +20,15 @@ from telegram.ext import Application, CommandHandler, ContextTypes, InlineQueryH
 import sqlite3 as lite
 
 import pandas as pd
-from openpyxl import load_workbook
+# from openpyxl import load_workbook
 
 
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload
+# from google.oauth2 import service_account
+# from googleapiclient.discovery import build
+# from googleapiclient.http import MediaIoBaseDownload
 
-import io
-import fitz 
+# import io
+# import fitz 
 
 from PIL import Image
 # Enable logging
