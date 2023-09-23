@@ -17,7 +17,7 @@ import os
 from telegram import InlineQueryResultArticle, InputTextMessageContent, Update
 from telegram.constants import ParseMode,ChatAction
 from telegram.ext import Application, CommandHandler, ContextTypes, InlineQueryHandler,CallbackContext
-import sqlite3 as lite
+# import sqlite3 as lite
 
 # import pandas as pd
 # from openpyxl import load_workbook
@@ -40,7 +40,7 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-database_path = os.path.dirname(__file__) + "\\MyData.db"
+# database_path = os.path.dirname(__file__) + "\\MyData.db"
 
 
 
@@ -59,12 +59,12 @@ def health():
     db = get_db()
     health = "OK"
     try:
-        cur = con.cursor()    
-        cur.execute('SELECT SQLITE_VERSION()')
+        # cur = con.cursor()    
+        # cur.execute('SELECT SQLITE_VERSION()')
      
-        data = cur.fetchone()
+        # data = cur.fetchone()
      
-        health = "OK " + "SQLite version: %s" % data
+        # health = "OK " + "SQLite version: %s" % data
         log.info(f"/health reported OK including database connection: {data}")
     except sqlalchemy.exc.OperationalError as e:
         msg = f"sqlalchemy.exc.OperationalError: {e}"
