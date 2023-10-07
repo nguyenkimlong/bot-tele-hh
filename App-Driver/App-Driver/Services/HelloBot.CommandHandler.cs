@@ -89,7 +89,7 @@ namespace HelloBotNET.AppService.Services
 
                         //var fileImage = ConvertPdfToImg(streamFile);
                         if (streamFile != null)
-                            await Api.SendDocumentAsync(message.Chat.Id, new InputFile(streamFile, name + ".jpg"));
+                            await Api.SendDocumentAsync(message.Chat.Id, new InputFile(streamFile.ToArray(), name + ".jpg"));
                         else
                         {
                             Api.SendMessage(message.Chat.Id, "Gửi thất bại");
