@@ -87,9 +87,9 @@ namespace HelloBotNET.AppService.Services
 
                         var streamFile = LoadFilesDrive($"{commandParameters.ToUpper()}.pdf", "Cham_Cong");
 
-                        var fileImage = ConvertPdfToImg(streamFile);
+                        //var fileImage = ConvertPdfToImg(streamFile);
                         if (streamFile != null)
-                            await Api.SendDocumentAsync(message.Chat.Id, new InputFile(fileImage, name + ".jpg"));
+                            await Api.SendDocumentAsync(message.Chat.Id, new InputFile(streamFile, name + ".jpg"));
                         else
                         {
                             Api.SendMessage(message.Chat.Id, "Gửi thất bại");
