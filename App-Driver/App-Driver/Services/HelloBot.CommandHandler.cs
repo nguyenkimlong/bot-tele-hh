@@ -85,11 +85,14 @@ namespace HelloBotNET.AppService.Services
                         desMsnv = "Mã số nhân viên " + commandParameters;
                         _Message = message;
 
-                        var streamFile = LoadFilesDrive($"{commandParameters.ToUpper()}.pdf", "Cham_Cong");
+                        var streamFile = LoadFilesDrive($"{commandParameters.ToUpper()}.jpeg", "Cham_Cong");
 
                         //var fileImage = ConvertPdfToImg(streamFile);
                         if (streamFile != null)
+                        {
                             await Api.SendDocumentAsync(message.Chat.Id, new InputFile(streamFile.ToArray(), name + ".jpg"));
+                            streamFile.Dispose();
+                        }
                         else
                         {
                             Api.SendMessage(message.Chat.Id, "Gửi thất bại");
@@ -354,7 +357,7 @@ namespace HelloBotNET.AppService.Services
             {
                 using (var ms = new MemoryStream())
                 {
-                    
+
 #pragma warning disable CA1416 // Validate platform compatibility
                     PDFtoImage.Conversion.SaveJpeg(ms, stream.ToArray());
 #pragma warning restore CA1416 // Validate platform compatibility
