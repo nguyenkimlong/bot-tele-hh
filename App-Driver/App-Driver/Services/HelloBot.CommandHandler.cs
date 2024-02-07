@@ -5,6 +5,7 @@ using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using HelloBotNET.AppService.SqlLite.Model;
+using Microsoft.Extensions.Caching.Distributed;
 using SQLite;
 //using HelloBotNET.AppService.SqlLite.Model;
 //using SQLite;
@@ -23,6 +24,7 @@ namespace HelloBotNET.AppService.Services
     /// It contains the main functionality of the telegram bot. <br />
     /// The application creates a new instance of this class to process each update received.
     /// </summary>
+    /// 
     public partial class HelloBot : TelegramBotBase<HelloBotProperties>
     {
         private string databasePath = Path.Combine(Directory.GetCurrentDirectory(), "MyData.db");
@@ -79,6 +81,16 @@ namespace HelloBotNET.AppService.Services
                             }
                             name = RemoveSign4VietnameseString(anyCode.EmployeeFullName).Replace(" ", "_");
                         }
+                        var memberKeyId = $"M_{message.Chat.Id}";
+
+                        var processingChatId = _memoryCache.GetString(memberKeyId);
+                        if (processingChatId != null)
+                        {
+                            Api.SendMessage(message.Chat.Id, "Thao Tác Đang Thực Hiện, Vui Lòng Đợi Giây Lát !!!");
+                            break;
+                        }
+                        else _memoryCache.SetString(memberKeyId, message.Chat.Id.ToString());
+
                         Api.SendChatAction(message.Chat.Id, action: "upload_photo");
 
 
@@ -97,6 +109,7 @@ namespace HelloBotNET.AppService.Services
                         {
                             Api.SendMessage(message.Chat.Id, "Gửi thất bại");
                         }
+                        _memoryCache.Remove(memberKeyId);
                     }
                     else
                         Api.SendMessage(message.Chat.Id, desMsnv);
@@ -188,7 +201,31 @@ namespace HelloBotNET.AppService.Services
             return dt;
         }
 
-        private static ServiceAccountCredential GetCredentials()
+        //private static ServiceAccountCredential GetCredentials()
+        //{
+
+        //    ////////////////////////////
+        //    string[] scopes = new string[] { DriveService.Scope.Drive }; // Full access
+
+        //    var keyFilePath = @"client_P12.p12";    // Downloaded from https://console.developers.google.com
+        //    var serviceAccountEmail = "data-test@my-project-upload-file-363503.iam.gserviceaccount.com";  // found https://console.developers.google.com
+
+        //    //loading the Key file
+        //    var certificate = new X509Certificate2(keyFilePath, "notasecret", X509KeyStorageFlags.Exportable);
+        //    var credential = new ServiceAccountCredential(new ServiceAccountCredential.Initializer(serviceAccountEmail)
+        //    {
+        //        Scopes = scopes,
+
+        //    }.FromCertificate(certificate));
+        //    ////////////////////////////////////
+
+
+
+        //    return credential;
+
+        //}
+
+        private static GoogleCredential GetCredentials()
         {
             //string[] scopes = new string[] { DriveService.Scope.Drive };
 
@@ -208,19 +245,42 @@ namespace HelloBotNET.AppService.Services
             //        new FileDataStore(credPath, true)).Result;
             //}
             //return credential;
-            string[] scopes = new string[] { DriveService.Scope.Drive }; // Full access
 
-            var keyFilePath = @"client_P12.p12";    // Downloaded from https://console.developers.google.com
-            var serviceAccountEmail = "data-test@my-project-upload-file-363503.iam.gserviceaccount.com";  // found https://console.developers.google.com
+            ////////////////////////////
+            //string[] scopes = new string[] { DriveService.Scope.Drive }; // Full access
 
-            //loading the Key file
-            var certificate = new X509Certificate2(keyFilePath, "notasecret", X509KeyStorageFlags.Exportable);
-            var credential = new ServiceAccountCredential(new ServiceAccountCredential.Initializer(serviceAccountEmail)
+            //var keyFilePath = @"client_P12.p12";    // Downloaded from https://console.developers.google.com
+            //var serviceAccountEmail = "data-test@my-project-upload-file-363503.iam.gserviceaccount.com";  // found https://console.developers.google.com
+
+            ////loading the Key file
+            //var certificate = new X509Certificate2(keyFilePath, "notasecret", X509KeyStorageFlags.Exportable);
+            //var credential = new ServiceAccountCredential(new ServiceAccountCredential.Initializer(serviceAccountEmail)
+            //{
+            //    Scopes = scopes,
+
+            //}.FromCertificate(certificate));
+            ////////////////////////////////////
+
+            string[] scopes = { DriveService.Scope.Drive };  // Full access
+
+            string keyFilePath = @"key-drive.json";  // Path to your service account key file
+            string serviceAccountEmail = "your-service-account-email@example.com";  // Your service account email
+
+            GoogleCredential credentials;
+
+            using (var stream = new System.IO.FileStream(keyFilePath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
             {
-                Scopes = scopes,
+                credentials = GoogleCredential.FromStream(stream).CreateScoped(scopes);
+            }
 
-            }.FromCertificate(certificate));
-            return credential;
+            // Now you can use the 'credentials' object to interact with the Google Drive API.
+            // For example, you can create a DriveService using these credentials.
+            //var driveService = new DriveService(new Google.Apis.Services.BaseClientService.Initializer()
+            //{
+            //    HttpClientInitializer = credentials
+            //});
+
+            return credentials;
 
         }
 

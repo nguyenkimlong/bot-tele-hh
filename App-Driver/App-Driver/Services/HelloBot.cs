@@ -1,4 +1,5 @@
-﻿using Telegram.BotAPI;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using Telegram.BotAPI;
 
 namespace HelloBotNET.AppService.Services
 {
@@ -10,9 +11,11 @@ namespace HelloBotNET.AppService.Services
     {
         private readonly ILogger<HelloBot> _logger;
 
-        public HelloBot(ILogger<HelloBot> logger, HelloBotProperties botProperties) : base(botProperties)
+        private readonly IDistributedCache _memoryCache;
+        public HelloBot(ILogger<HelloBot> logger, IDistributedCache memoryCache, HelloBotProperties botProperties) : base(botProperties)
         {
             _logger = logger;
+            _memoryCache = memoryCache;
         }
     }
 }

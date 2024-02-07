@@ -258,7 +258,8 @@ namespace Telegram.BotAPI
                 }
                 else
                 {
-                    throw new BotRequestException(response.ErrorCode, response.Description, response.Parameters);
+                    return default;
+                    //throw new BotRequestException(response.ErrorCode, response.Description, response.Parameters);
                 }
             }
         }

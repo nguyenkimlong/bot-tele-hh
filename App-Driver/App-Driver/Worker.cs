@@ -10,6 +10,8 @@ namespace App_Driver.Worker
         private readonly BotClient _api;
         private readonly ILogger<Worker> _logger;
         private readonly IServiceProvider _serviceProvider;
+        private readonly TimeSpan sleepInterval = TimeSpan.FromSeconds(60); // Sleep for 60 seconds
+
 
         public Worker(ILogger<Worker> logger, HelloBotProperties botProperties, IServiceProvider serviceProvider)
         {
@@ -23,18 +25,24 @@ namespace App_Driver.Worker
             _logger.LogInformation("Worker running at: {Time}", DateTimeOffset.Now);
 
             // Long Polling
-            var updates = await _api.GetUpdatesAsync(cancellationToken: stoppingToken).ConfigureAwait(false);
+            var updates = await _api.GetUpdatesAsync(cancellationToken: stoppingToken);
             while (!stoppingToken.IsCancellationRequested)
             {
-                if (updates.Any())
+                try
                 {
-                    Parallel.ForEach(updates, (update) => ProcessUpdate(update));
+                    if (updates.Any())
+                    {
+                        Parallel.ForEach(updates, (update) => ProcessUpdate(update));
 
-                    updates = await _api.GetUpdatesAsync(updates[^1].UpdateId + 1, cancellationToken: stoppingToken).ConfigureAwait(false);
+                        updates = await _api.GetUpdatesAsync(updates[^1].UpdateId + 1, cancellationToken: stoppingToken);
+                    }
+                    else
+                    {
+                        updates = await _api.GetUpdatesAsync(cancellationToken: stoppingToken);
+                    }
                 }
-                else
+                catch
                 {
-                    updates = await _api.GetUpdatesAsync(cancellationToken: stoppingToken).ConfigureAwait(false);
                 }
             }
         }
