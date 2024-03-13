@@ -1,3 +1,4 @@
+using DocumentFormat.OpenXml.Spreadsheet;
 using HelloBotNET.AppService;
 using HelloBotNET.AppService.Services;
 using Serilog;
@@ -27,18 +28,18 @@ namespace App_Driver.Worker
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Worker running at: {Time}", DateTimeOffset.Now);
-
+            using var scope = _serviceProvider.CreateScope();
+            var bot = scope.ServiceProvider.GetRequiredService<HelloBot>();
             // Long Polling
             var updates = await _api.GetUpdatesAsync(cancellationToken: stoppingToken);
+            _api.DeleteWebhook();
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
-                {
+                {                    
                     if (updates.Any())
-                    {
-                        
-                        Parallel.ForEach(updates, (update) => ProcessUpdate(update));
-
+                    {                        
+                        Parallel.ForEach(updates, (update) => ProcessUpdate(bot,update));
                         updates = await _api.GetUpdatesAsync(updates[^1].UpdateId + 1, cancellationToken: stoppingToken);
                     }
                     else
@@ -49,17 +50,17 @@ namespace App_Driver.Worker
                 catch (Exception ex)
                 {
                     Log.Error(ex, "Error during ExecuteAsync");
+                    _api.DeleteWebhook();
                 }
                 CleanupOldLogs();
             }
 
         }
 
-        private void ProcessUpdate(Update update)
+        private void ProcessUpdate(HelloBot bot, Update update)
         {
             _logger.LogInformation("User Action: {Time}, message: {text}", update.Message.From?.Id, update.Message.Text);
-            using var scope = _serviceProvider.CreateScope();
-            var bot = scope.ServiceProvider.GetRequiredService<HelloBot>();
+           
             bot.OnUpdate(update);
         }
 
