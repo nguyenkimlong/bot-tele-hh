@@ -31,6 +31,7 @@ namespace HelloBotNET.AppService.Services
         private const string ApplicationName = "my-project-upload-file-363503";
         private const string AppDriveApi = "https://driveappname.herokuapp.com/api";
         public Message _Message { get; set; }
+        public new BotClient Api { get { return base.Api; } }
         protected override async void OnCommand(Message message, string commandName, string commandParameters)
         {
             var args = commandParameters.Split(' ');

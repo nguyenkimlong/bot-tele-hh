@@ -18,7 +18,7 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSingleton<HelloBotProperties>();
 
 // Add bot service.
-builder.Services.AddScoped<HelloBot>();
+builder.Services.AddSingleton<HelloBot>();
 builder.Services.Configure<HostOptions>(options =>
 {
     //Service Behavior in case of exceptions - defautls to StopHost
