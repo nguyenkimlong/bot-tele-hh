@@ -57,7 +57,7 @@ namespace HelloBotNET.AppService.Services
                     if (!string.IsNullOrEmpty(commandParameters) && args.Length == 1 && commandParameters.Contains("restart"))
                     {
                         using HttpClient client = new HttpClient();
-                        client.BaseAddress = new Uri("https://localhost:7198");
+                        client.BaseAddress = new Uri("http://localhost:5198");
                         var dataRs = await client.GetAsync("/api/home/restart");
                         string content = await dataRs.Content.ReadAsStringAsync();
                         Api.SendMessage(message.Chat.Id, content);
