@@ -54,6 +54,14 @@ namespace HelloBotNET.AppService.Services
                         var mess = Excel2DB();
                         Api.SendMessage(message.Chat.Id, mess);
                     }
+                    if (!string.IsNullOrEmpty(commandParameters) && args.Length == 1 && commandParameters.Contains("restart"))
+                    {
+                        using HttpClient client = new HttpClient();
+                        client.BaseAddress = new Uri("https://localhost:7198");
+                        var dataRs = await client.GetAsync("/api/home/restart");
+                        string content = await dataRs.Content.ReadAsStringAsync();
+                        Api.SendMessage(message.Chat.Id, content);
+                    }
                     break;
                 case "hello": // Reply to /hello command
                     var hello = string.Format("Xin chào, {0}!", message.From!.FirstName);

@@ -45,8 +45,8 @@ namespace App_Driver.Worker
                 try
                 {
                     if (updates.Any())
-                    {
-                        Parallel.ForEach(updates.Distinct(), (update) => ProcessUpdate(update));
+                    {                     
+                        ProcessUpdate(updates.Distinct());
                         updates = await _api.GetUpdatesAsync(updates[^1].UpdateId + 1, cancellationToken: stoppingToken);
                     }
                     else
@@ -80,20 +80,21 @@ namespace App_Driver.Worker
             // enter from _semaphore.WaitAsync
             _semaphore.Release();
         }
-        private void ProcessUpdate(Update update)
+        private void ProcessUpdate(IEnumerable<Update> updates)
         {
-            _logger.LogInformation("User Action: {Time}, message: {text}", update.Message.From?.Id, update.Message.Text);
-
-            if (botService != null)
-            {
-                botService.OnUpdate(update);
-            }
-            else
+            var serviceBot = botService;
+            if (botService == null)
             {
                 using var scope = _serviceProvider.CreateScope();
                 var bot = scope.ServiceProvider.GetRequiredService<HelloBot>();
-                bot.OnUpdate(update);
+                serviceBot = bot;
             }
+
+            Parallel.ForEach(updates, (update) =>
+            {
+                _logger.LogInformation("User Action: {Time}, message: {text}", update.Message.From?.Id, update.Message.Text);
+                serviceBot.OnUpdate(update);
+            });
         }
 
         public override Task StopAsync(CancellationToken cancellationToken)
