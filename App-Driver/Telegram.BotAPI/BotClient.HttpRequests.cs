@@ -1,9 +1,11 @@
 ﻿// Copyright (c) 2022 Quetzal Rivera.
 // Licensed under the MIT License, See LICENCE in the project root for license information.
 
+using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
@@ -12,6 +14,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using Telegram.BotAPI.AvailableTypes;
 
 namespace Telegram.BotAPI
@@ -171,25 +174,40 @@ namespace Telegram.BotAPI
 
         internal async Task<BotResponse<T>> SendRequestAsync<T>(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-            try
+            var tries = 3;
+            for (int i = 1; i <= tries; i++)
             {
-                response.EnsureSuccessStatusCode();
-                var streamResponse = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                return await JsonSerializer.DeserializeAsync<BotResponse<T>>(streamResponse, DefaultSerializerOptions, cancellationToken: cancellationToken);
-            }
-            catch (HttpRequestException exp)
-            {
-                if (response.Content.Headers.ContentType.MediaType == applicationJson)
+                var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                try
                 {
+                    response.EnsureSuccessStatusCode();
                     var streamResponse = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                    return await JsonSerializer.DeserializeAsync<BotResponse<T>>(streamResponse, DefaultSerializerOptions, cancellationToken: cancellationToken);
+                    var dataResponse = await JsonSerializer.DeserializeAsync<BotResponse<T>>(streamResponse, DefaultSerializerOptions, cancellationToken: cancellationToken);
+                    if (!dataResponse.Ok && dataResponse.ErrorCode == 429)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(dataResponse.Parameters.RetryAfter));
+                        continue;
+                    }
+                    if (dataResponse.Ok && response.StatusCode == HttpStatusCode.OK)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(2));
+                    }
+                    return dataResponse;
                 }
-                else
+                catch (HttpRequestException exp)
                 {
-                    throw new BotRequestException(exp, response);
+                    if (response.Content.Headers.ContentType.MediaType == applicationJson)
+                    {
+                        var streamResponse = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                        return await JsonSerializer.DeserializeAsync<BotResponse<T>>(streamResponse, DefaultSerializerOptions, cancellationToken: cancellationToken);
+                    }
+                    else
+                    {
+                        throw new BotRequestException(exp, response);
+                    }
                 }
             }
+            return default;
         }
 
         /// <summary>RPC</summary>
