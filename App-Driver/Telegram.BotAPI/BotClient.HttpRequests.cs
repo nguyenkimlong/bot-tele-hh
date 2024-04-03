@@ -79,7 +79,7 @@ namespace Telegram.BotAPI
         public async Task<BotResponse<T>> GetRequestAsync<T>(string method, [Optional] CancellationToken cancellationToken)
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.telegram.org/bot{Token}/{method}");
-            return await SendRequestAsync<T>(request, cancellationToken).ConfigureAwait(false);
+            return await SendRequestAsync<T>(request, cancellationToken);
         }
 
         /// <summary>Makes a bot request using HTTP POST and returns the response.</summary>
@@ -154,7 +154,7 @@ namespace Telegram.BotAPI
                 Content = new StreamContent(args)
             };
             request.Content.Headers.ContentType = new MediaTypeHeaderValue(applicationJson);
-            return await SendRequestAsync<T>(request, cancellationToken).ConfigureAwait(false);
+            return await SendRequestAsync<T>(request, cancellationToken);
         }
 
         /// <summary>Makes a bot request using HTTP POST and Multipart Form Data and returns the response.</summary>
@@ -169,45 +169,36 @@ namespace Telegram.BotAPI
             {
                 Content = args
             };
-            return await SendRequestAsync<T>(request, cancellationToken).ConfigureAwait(false);
+            return await SendRequestAsync<T>(request, cancellationToken);
         }
 
         internal async Task<BotResponse<T>> SendRequestAsync<T>(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var tries = 3;
-            for (int i = 1; i <= tries; i++)
+
+            var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            try
             {
-                var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                try
+                response.EnsureSuccessStatusCode();
+                var streamResponse = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                var dataResponse = await JsonSerializer.DeserializeAsync<BotResponse<T>>(streamResponse, DefaultSerializerOptions, cancellationToken: cancellationToken);
+                if (!dataResponse.Ok && dataResponse.ErrorCode == 429)
                 {
-                    response.EnsureSuccessStatusCode();
-                    var streamResponse = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                    var dataResponse = await JsonSerializer.DeserializeAsync<BotResponse<T>>(streamResponse, DefaultSerializerOptions, cancellationToken: cancellationToken);
-                    if (!dataResponse.Ok && dataResponse.ErrorCode == 429)
-                    {
-                        await Task.Delay(TimeSpan.FromSeconds(dataResponse.Parameters.RetryAfter));
-                        continue;
-                    }
-                    if (dataResponse.Ok && response.StatusCode == HttpStatusCode.OK)
-                    {
-                        await Task.Delay(TimeSpan.FromSeconds(2));
-                    }
-                    return dataResponse;
+                    await Task.Delay(TimeSpan.FromSeconds(dataResponse.Parameters.RetryAfter));
                 }
-                catch (HttpRequestException exp)
+                return dataResponse;
+            }
+            catch (HttpRequestException exp)
+            {
+                if (response.Content.Headers.ContentType.MediaType == applicationJson)
                 {
-                    if (response.Content.Headers.ContentType.MediaType == applicationJson)
-                    {
-                        var streamResponse = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                        return await JsonSerializer.DeserializeAsync<BotResponse<T>>(streamResponse, DefaultSerializerOptions, cancellationToken: cancellationToken);
-                    }
-                    else
-                    {
-                        throw new BotRequestException(exp, response);
-                    }
+                    var streamResponse = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    return await JsonSerializer.DeserializeAsync<BotResponse<T>>(streamResponse, DefaultSerializerOptions, cancellationToken: cancellationToken);
+                }
+                else
+                {
+                    throw new BotRequestException(exp, response);
                 }
             }
-            return default;
         }
 
         /// <summary>RPC</summary>
